@@ -7,13 +7,12 @@ import com.github.dockerjava.api.exception.NotAcceptableException;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
+import org.bouncycastle.oer.Switch;
 import org.junit.Assert;
 import util.PReader;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-
-import static org.hamcrest.MatcherAssert.assertThat;
 
 public class ValuationStepsdefinition {
 
@@ -38,17 +37,20 @@ public class ValuationStepsdefinition {
     @When("I search vehicle registration by model name {string}")
     public void iSearchVehicleRegistrationByModelNameModel(String make) throws IOException {
         List<String> regToSearch = propertiesReader.getVehicleReg("src/main/java/util/car_input_v2.txt");
-
-        if (Objects.equals(make, "BMW"))
-            valuationPage.SearchVehicleRegistration(regToSearch.get(0));
-        else if (Objects.equals(make, "Toyota"))
-            valuationPage.SearchVehicleRegistration(regToSearch.get(1));
-        else if (Objects.equals(make, "SKODA"))
-            valuationPage.SearchVehicleRegistration(regToSearch.get(2));
-        else if (Objects.equals(make, "Volkswagen"))
-            valuationPage.SearchVehicleRegistration(regToSearch.get(3));
-        else
-            throw new NotAcceptableException("Invalid Make Type");
+        switch (make){
+            case "BMW":
+                valuationPage.SearchVehicleRegistration(regToSearch.get(0));
+                break;
+            case "Toyota":
+                valuationPage.SearchVehicleRegistration(regToSearch.get(1));
+                break;
+            case "SKODA":
+                valuationPage.SearchVehicleRegistration(regToSearch.get(2));
+                break;
+            case "Volkswagen":
+                valuationPage.SearchVehicleRegistration(regToSearch.get(3));
+                break;
+        }
 
         valuationPage.ClickGetStartedBtn();
     }
@@ -59,29 +61,30 @@ public class ValuationStepsdefinition {
         String actualExtractedTxt = resultPage.GetSearchResultHeaderTxt().replace("\n", "\n ");
 
         String expectedResultTxt = propertiesReader.readFromFile("src/main/java/util/car_output_v2.txt");
-        String expectedTextByRegType = Objects.equals(make, "BMW")
+        String expectedTextByRegType = make.equals("BMW")
                 ? expectedResultTxt.split("\r")[2].split(",")[0]
-                .concat("," + expectedResultTxt.split("\r")[2].split(",")[1])
-                .concat("," + expectedResultTxt.split("\r")[2].split(",")[2])
-                : Objects.equals(make, "SKODA")
+                . concat("," + expectedResultTxt.split("\r")[2].split(",")[1])
+                . concat("," + expectedResultTxt.split("\r")[2].split(",")[2])
+                : make.equals("SKODA")
                 ? expectedResultTxt.split("\r")[4].split(",")[0]
-                .concat("," + expectedResultTxt.split("\r")[4].split(",")[1])
-                .concat("," + expectedResultTxt.split("\r")[4].split(",")[2])
-                : Objects.equals(make, "Volkswagen")
+                . concat("," + expectedResultTxt.split("\r")[4].split(",")[1])
+                . concat("," + expectedResultTxt.split("\r")[4].split(",")[2])
+                : make.equals("Volkswagen")
                 ? expectedResultTxt.split("\r")[1].split(",")[0]
-                .concat("," + expectedResultTxt.split("\r")[1].split(",")[1])
-                .concat("," + expectedResultTxt.split("\r")[1].split(",")[2])
+                . concat("," + expectedResultTxt.split("\r")[1].split(",")[1])
+                . concat("," + expectedResultTxt.split("\r")[1].split(",")[2])
                 : null;
 
         String actualTextByRegType = Objects.equals(make, "BMW")
-                || Objects.equals(make, "SKODA")
-                || Objects.equals(make, "Volkswagen")
+                || make.equals("SKODA")
+                || make.equals("Volkswagen")
                 ? actualExtractedTxt.split("\n")[1].trim()
-                .concat(actualExtractedTxt.split("\n")[2]).replace("| ", "")
-                .concat(actualExtractedTxt.split("\n")[3]).replace("| ", "")
+                . concat(actualExtractedTxt.split("\n")[2]).replace("| ", "")
+                . concat(actualExtractedTxt.split("\n")[3]).replace("| ", "")
                 : null;
-        Assert.assertTrue(Objects.equals(expectedTextByRegType, actualTextByRegType));
+
         //Assert.assertTrue(actualTextByRegType.contains(expectedTextByRegType));
+        Assert.assertEquals(expectedTextByRegType, actualTextByRegType);
     }
 
     @Then("errorMsg is displayed")
